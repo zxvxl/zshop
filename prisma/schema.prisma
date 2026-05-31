@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  nameEn   String    @default("")
+  sort     Int       @default(0)
+  products Product[]
+}
+
+model Product {
+  id          Int       @id @default(autoincrement())
+  title       String
+  titleEn     String    @default("")
+  description String    @default("")
+  descEn      String    @default("")
+  price       Float
+  category    Category  @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  show        Boolean   @default(true)
+  autoDeliver Boolean   @default(true)
+  sort        Int       @default(0)
+  createdAt   DateTime  @default(now())
+  cards       Card[]
+  orders      Order[]
+  // 用于 USDT 唯一金额生成
+  currentNo   Int       @default(0)
+  currentHour String    @default("")
+}
+
+model Card {
+  id        Int      @id @default(autoincrement())
+  content   String
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  sold      Boolean  @default(false)
+  order     Order?   @relation(fields: [orderId], references: [id])
+  orderId   Int?
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id        Int       @id @default(autoincrement())
+  orderNo   String    @unique
+  email     String
+  product   Product   @relation(fields: [productId], references: [id])
+  productId Int
+  quantity  Int       @default(1)
+  amount    String
+  status    String    @default("pending")
+  address   String
+  cards     Card[]
+  paidAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Tx {
+  id      Int     @id @default(autoincrement())
+  hash    String  @unique
+  amount  String
+  matched Boolean @default(false)
+  orderId Int?
+}

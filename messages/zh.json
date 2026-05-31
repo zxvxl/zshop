@@ -1,0 +1,57 @@
+{
+  "site": {
+    "name": "ZShop",
+    "description": "数字商品自助购买平台"
+  },
+  "nav": {
+    "home": "首页",
+    "orders": "订单查询",
+    "login": "我的账号"
+  },
+  "home": {
+    "title": "购买商品",
+    "allProducts": "全部商品",
+    "totalProducts": "共 {count} 款商品",
+    "empty": "暂无商品",
+    "outOfStock": "售罄",
+    "autoDelivery": "自动发货",
+    "stock": "库存",
+    "stockEnough": "充足",
+    "sold": "已售"
+  },
+  "order": {
+    "title": "确认订单",
+    "email": "接收邮箱",
+    "emailPlaceholder": "请输入邮箱地址",
+    "emailHint": "卡密将发送到此邮箱",
+    "quantity": "购买数量",
+    "amount": "支付金额",
+    "submit": "提交订单",
+    "payTitle": "待支付",
+    "payHint": "请向以下地址转账精确金额",
+    "payAddress": "收款地址",
+    "payAmount": "转账金额",
+    "payNetwork": "网络",
+    "payCopy": "复制",
+    "payCopied": "已复制",
+    "payWaiting": "等待支付中...",
+    "payExpire": "订单将在 30 分钟后过期",
+    "paid": "支付成功",
+    "paidHint": "您的卡密如下",
+    "queryTitle": "订单查询",
+    "queryPlaceholder": "输入邮箱或订单号",
+    "queryBtn": "查询",
+    "queryEmpty": "未找到相关订单",
+    "statusPending": "待支付",
+    "statusPaid": "已完成",
+    "statusExpired": "已过期"
+  },
+  "notice": {
+    "title": "下单须知",
+    "rules": [
+      "付款后系统自动发货，请确保转账金额精确到小数",
+      "默认质保首登，数据仅保留 7 天，请及时保存",
+      "如有问题请联系客服"
+    ]
+  }
+}

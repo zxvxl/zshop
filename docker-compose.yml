@@ -1,0 +1,26 @@
+services:
+  app:
+    build: .
+    container_name: zshop
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - DATABASE_URL=file:/app/data/zshop.db
+      - HTTP_BASIC_AUTH=${HTTP_BASIC_AUTH:-admin:123456}
+      - HOST=http://localhost:3000
+      - BSC_WALLET=${BSC_WALLET}
+      - BSC_USDT_TOKEN=${BSC_USDT_TOKEN}
+      - BSCSCAN_KEY=${BSCSCAN_KEY}
+    volumes:
+      - ./data:/app/data
+
+  cron:
+    build: .
+    container_name: zshop-cron
+    restart: unless-stopped
+    entrypoint: ["node", "cron.js"]
+    environment:
+      - HOST=http://app:3000
+    depends_on:
+      - app

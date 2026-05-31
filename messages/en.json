@@ -1,0 +1,57 @@
+{
+  "site": {
+    "name": "ZShop",
+    "description": "Digital goods self-service platform"
+  },
+  "nav": {
+    "home": "Home",
+    "orders": "Order Query",
+    "login": "My Account"
+  },
+  "home": {
+    "title": "Buy Products",
+    "allProducts": "All Products",
+    "totalProducts": "{count} products available",
+    "empty": "No products available",
+    "outOfStock": "Sold Out",
+    "autoDelivery": "Auto Delivery",
+    "stock": "Stock",
+    "stockEnough": "Available",
+    "sold": "Sold"
+  },
+  "order": {
+    "title": "Confirm Order",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "emailHint": "Card keys will be sent to this email",
+    "quantity": "Quantity",
+    "amount": "Amount",
+    "submit": "Submit Order",
+    "payTitle": "Pending Payment",
+    "payHint": "Please transfer the exact amount to the address below",
+    "payAddress": "Payment Address",
+    "payAmount": "Transfer Amount",
+    "payNetwork": "Network",
+    "payCopy": "Copy",
+    "payCopied": "Copied",
+    "payWaiting": "Waiting for payment...",
+    "payExpire": "Order will expire in 30 minutes",
+    "paid": "Payment Successful",
+    "paidHint": "Your card keys are below",
+    "queryTitle": "Order Query",
+    "queryPlaceholder": "Enter email or order number",
+    "queryBtn": "Search",
+    "queryEmpty": "No orders found",
+    "statusPending": "Pending",
+    "statusPaid": "Completed",
+    "statusExpired": "Expired"
+  },
+  "notice": {
+    "title": "Notice",
+    "rules": [
+      "Payment is processed automatically, ensure the exact amount is transferred",
+      "Default warranty covers first login, data retained for 7 days only",
+      "Contact support if you have any issues"
+    ]
+  }
+}

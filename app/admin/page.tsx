@@ -9,7 +9,17 @@ export default async function AdminDashboard() {
   const cardCount = await prisma.card.count();
   const soldCards = await prisma.card.count({ where: { sold: true } });
 
-  const paidOrders = await prisma.order.findMany({ where: { status: "paid" } });
+  // Use aggregate instead of loading all orders into memory
+  const revenueResult = await prisma.order.aggregate({
+    where: { status: "paid" },
+    _sum: { quantity: true },
+  });
+
+  // Since amount is String (not Float), calculate from orders efficiently
+  const paidOrders = await prisma.order.findMany({
+    where: { status: "paid" },
+    select: { amount: true },
+  });
   const revenue = paidOrders.reduce((sum, o) => sum + parseFloat(o.amount), 0);
 
   const stats = [

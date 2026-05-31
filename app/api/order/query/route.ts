@@ -3,28 +3,34 @@ import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const { keyword } = await request.json();
+    const { email, orderNo } = await request.json();
 
-    if (!keyword || keyword.trim().length < 3) {
-      return NextResponse.json({ error: "Keyword too short" }, { status: 400 });
+    // Require both email AND orderNo for security
+    if (!email || !orderNo) {
+      return NextResponse.json(
+        { error: "Both email and order number are required" },
+        { status: 400 }
+      );
     }
 
-    const trimmed = keyword.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedOrderNo = orderNo.trim();
 
-    // Search by orderNo or email
+    if (trimmedEmail.length < 5 || trimmedOrderNo.length < 5) {
+      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+    }
+
     const orders = await prisma.order.findMany({
       where: {
-        OR: [
-          { orderNo: trimmed },
-          { email: trimmed },
-        ],
+        email: trimmedEmail,
+        orderNo: trimmedOrderNo,
       },
       include: {
         product: { select: { title: true, titleEn: true } },
         cards: { select: { content: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 10,
     });
 
     const result = orders.map((order) => ({
@@ -40,6 +46,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ orders: result });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

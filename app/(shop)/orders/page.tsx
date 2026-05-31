@@ -4,21 +4,22 @@ import { useState } from "react";
 
 export default function OrdersPage() {
   const t = useTranslations("order");
-  const [keyword, setKeyword] = useState("");
+  const [email, setEmail] = useState("");
+  const [orderNo, setOrderNo] = useState("");
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
   const search = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!keyword.trim()) return;
+    if (!email.trim() || !orderNo.trim()) return;
     setLoading(true);
     setSearched(true);
     try {
       const res = await fetch("/api/order/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyword: keyword.trim() }),
+        body: JSON.stringify({ email: email.trim(), orderNo: orderNo.trim() }),
       });
       const data = await res.json();
       setOrders(data.orders || []);
@@ -49,21 +50,32 @@ export default function OrdersPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-xl font-bold text-gray-900">{t("queryTitle")}</h1>
 
-      <form onSubmit={search} className="flex gap-2">
+      <form onSubmit={search} className="space-y-3">
         <input
-          type="text"
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          placeholder={t("queryPlaceholder")}
-          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder={t("emailPlaceholder")}
+          required
+          className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
         />
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold rounded-xl text-sm hover:shadow-md transition-all disabled:opacity-50"
-        >
-          {t("queryBtn")}
-        </button>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={orderNo}
+            onChange={(e) => setOrderNo(e.target.value)}
+            placeholder={t("queryPlaceholder")}
+            required
+            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-600 text-white font-bold rounded-xl text-sm hover:shadow-md transition-all disabled:opacity-50"
+          >
+            {t("queryBtn")}
+          </button>
+        </div>
       </form>
 
       {searched && orders.length === 0 && (

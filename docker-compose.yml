@@ -1,6 +1,8 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      target: runner
     container_name: zshop
     restart: unless-stopped
     ports:
@@ -16,10 +18,11 @@ services:
       - ./data:/app/data
 
   cron:
-    build: .
+    build:
+      context: .
+      target: cron
     container_name: zshop-cron
     restart: unless-stopped
-    entrypoint: ["node", "cron.js"]
     environment:
       - HOST=http://app:3000
     depends_on:

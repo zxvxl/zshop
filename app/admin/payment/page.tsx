@@ -1,11 +1,15 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getSupportedProviders } from "@/lib/payment";
+import { getAdminUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 async function createChannel(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const config: Record<string, any> = {};
   const provider = formData.get("provider") as string;
 
@@ -38,6 +42,8 @@ async function createChannel(formData: FormData) {
 
 async function toggleChannel(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const id = parseInt(formData.get("id") as string);
   const current = formData.get("enabled") === "true";
   await prisma.paymentChannel.update({ where: { id }, data: { enabled: !current } });
@@ -46,6 +52,8 @@ async function toggleChannel(formData: FormData) {
 
 async function deleteChannel(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const id = parseInt(formData.get("id") as string);
   await prisma.paymentChannel.delete({ where: { id } });
   revalidatePath("/admin/payment");

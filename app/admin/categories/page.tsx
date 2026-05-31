@@ -1,10 +1,14 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getAdminUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 async function createCategory(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   await prisma.category.create({
     data: {
       name: formData.get("name") as string,
@@ -17,6 +21,8 @@ async function createCategory(formData: FormData) {
 
 async function deleteCategory(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const id = parseInt(formData.get("id") as string);
   const productCount = await prisma.product.count({ where: { categoryId: id } });
   if (productCount > 0) return; // Can't delete if has products

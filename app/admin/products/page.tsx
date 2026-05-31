@@ -1,11 +1,15 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import { getAdminUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 async function toggleShow(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const id = parseInt(formData.get("id") as string);
   const current = formData.get("show") === "true";
   await prisma.product.update({ where: { id }, data: { show: !current } });

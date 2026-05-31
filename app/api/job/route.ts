@@ -38,9 +38,7 @@ export async function GET(request: Request) {
       const channel = await prisma.paymentChannel.findUnique({ where: { id: channelId } });
       if (!channel || !channel.enabled) continue;
 
-      // Only poll-based providers (USDT)
-      if (!channel.provider.startsWith("usdt_")) continue;
-
+      // Only poll-based providers (USDT) + Alipay as fallback
       const config = JSON.parse(channel.config);
       const provider = getProvider(channel.provider);
       if (!provider) continue;

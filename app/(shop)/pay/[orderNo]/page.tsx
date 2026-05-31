@@ -21,6 +21,8 @@ export default async function PayPage({ params }: { params: { orderNo: string } 
           status: order.status,
           amount: order.amount,
           address: order.address,
+          payUrl: order.payUrl || "",
+          qrCode: order.qrCode || "",
           productTitle: order.product.title,
           cards: order.cards.map((c) => c.content),
           createdAt: order.createdAt.toISOString(),

@@ -1,10 +1,14 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getAdminUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 async function toggleRole(formData: FormData) {
   "use server";
+  const admin = await getAdminUser();
+  if (!admin) redirect("/admin/login");
   const id = parseInt(formData.get("id") as string);
   const currentRole = formData.get("role") as string;
   const newRole = currentRole === "admin" ? "user" : "admin";

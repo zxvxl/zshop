@@ -31,6 +31,12 @@ export async function POST(request: NextRequest) {
     const result = await provider.handleNotify(params, config);
     if (!result.success) return new Response("fail", { status: 400 });
 
+    // Verify amount matches (prevent underpayment attack)
+    if (result.amount && result.amount !== order.amount) {
+      console.error(`Alipay amount mismatch: expected ${order.amount}, got ${result.amount}`);
+      return new Response("fail", { status: 400 });
+    }
+
     // Mark order as paid
     await prisma.order.update({
       where: { id: order.id },

@@ -1,22 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createOrder } from "@/lib/order";
+import { getAuthUser } from "@/lib/auth";
+import { success, error, validate, rateLimit, rateLimitError, getClientIp } from "@/lib/api";
+import { createOrderSchema } from "@/lib/schemas";
+import prisma from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  if (!rateLimit(ip, 10, 60000)) return rateLimitError();
+
   try {
-    const { productId, email, quantity } = await request.json();
+    const body = await request.json();
+    const result = validate(createOrderSchema, body);
+    if ("error" in result) return result.error;
 
-    if (!productId || !email) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    const { productId, email, quantity } = result.data;
+
+    const order = await createOrder(productId, email, quantity);
+
+    // If user is logged in, associate the order
+    const authUser = await getAuthUser();
+    if (authUser) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { userId: authUser.userId },
+      });
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
-    }
-
-    const order = await createOrder(productId, email, quantity || 1);
-
-    return NextResponse.json({ status: true, order });
+    return success(order);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Failed to create order" }, { status: 400 });
+    return error(40001, err.message || "Failed to create order", 400);
   }
 }

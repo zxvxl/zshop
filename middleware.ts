@@ -1,26 +1,38 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-const [AUTH_USER, AUTH_PASS] = (process.env.HTTP_BASIC_AUTH || "admin:123456").split(":");
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || "zshop-default-secret-change-me"
+);
+const ADMIN_COOKIE_NAME = "zshop-admin-token";
 
-function isAuthenticated(req: NextRequest) {
-  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
-  if (!authHeader) return false;
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
 
-  const auth = Buffer.from(authHeader.split(" ")[1], "base64").toString().split(":");
-  return auth[0] === AUTH_USER && auth[1] === AUTH_PASS;
-}
-
-export function middleware(req: NextRequest) {
-  if (!isAuthenticated(req)) {
-    return new NextResponse("Authentication required", {
-      status: 401,
-      headers: { "WWW-Authenticate": "Basic" },
-    });
+  // Allow admin login page and admin login API without auth
+  if (pathname === "/admin/login" || pathname === "/api/admin/login") {
+    return NextResponse.next();
   }
+
+  // Check admin cookie
+  const token = req.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (!token) {
+    return NextResponse.redirect(new URL("/admin/login", req.url));
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    if (payload.role !== "admin") {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+  } catch {
+    return NextResponse.redirect(new URL("/admin/login", req.url));
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: "/admin/:path*",
+  matcher: ["/admin/:path*"],
 };

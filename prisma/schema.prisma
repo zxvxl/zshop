@@ -7,6 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  nickname  String   @default("")
+  role      String   @default("user") // "user" | "admin"
+  createdAt DateTime @default(now())
+  orders    Order[]
+}
+
 model Category {
   id       Int       @id @default(autoincrement())
   name     String
@@ -30,7 +40,6 @@ model Product {
   createdAt   DateTime  @default(now())
   cards       Card[]
   orders      Order[]
-  // 用于 USDT 唯一金额生成
   currentNo   Int       @default(0)
   currentHour String    @default("")
 }
@@ -57,6 +66,8 @@ model Order {
   status    String    @default("pending")
   address   String
   cards     Card[]
+  user      User?     @relation(fields: [userId], references: [id])
+  userId    Int?
   paidAt    DateTime?
   createdAt DateTime  @default(now())
 }

@@ -46,6 +46,32 @@
     "statusPaid": "已完成",
     "statusExpired": "已过期"
   },
+  "auth": {
+    "loginTitle": "登录",
+    "registerTitle": "注册",
+    "email": "邮箱",
+    "password": "密码",
+    "nickname": "昵称",
+    "passwordHint": "至少 6 个字符",
+    "loginBtn": "登录",
+    "registerBtn": "注册",
+    "noAccount": "没有账号？",
+    "hasAccount": "已有账号？",
+    "loginLink": "去登录",
+    "registerLink": "去注册",
+    "logoutBtn": "退出"
+  },
+  "me": {
+    "title": "个人中心",
+    "orders": "我的订单",
+    "profile": "个人信息",
+    "changePassword": "修改密码",
+    "oldPassword": "当前密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认新密码",
+    "saveBtn": "保存",
+    "empty": "暂无订单"
+  },
   "notice": {
     "title": "下单须知",
     "rules": [

@@ -1,29 +1,23 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
+import { success, error, validate, rateLimit, rateLimitError, getClientIp } from "@/lib/api";
+import { orderQuerySchema } from "@/lib/schemas";
 
 export async function POST(request: NextRequest) {
+  const ip = getClientIp(request);
+  if (!rateLimit(ip, 10, 60000)) return rateLimitError();
+
   try {
-    const { email, orderNo } = await request.json();
+    const body = await request.json();
+    const result = validate(orderQuerySchema, body);
+    if ("error" in result) return result.error;
 
-    // Require both email AND orderNo for security
-    if (!email || !orderNo) {
-      return NextResponse.json(
-        { error: "Both email and order number are required" },
-        { status: 400 }
-      );
-    }
-
-    const trimmedEmail = email.trim().toLowerCase();
-    const trimmedOrderNo = orderNo.trim();
-
-    if (trimmedEmail.length < 5 || trimmedOrderNo.length < 5) {
-      return NextResponse.json({ error: "Invalid input" }, { status: 400 });
-    }
+    const { email, orderNo } = result.data;
 
     const orders = await prisma.order.findMany({
       where: {
-        email: trimmedEmail,
-        orderNo: trimmedOrderNo,
+        email: email.trim().toLowerCase(),
+        orderNo: orderNo.trim(),
       },
       include: {
         product: { select: { title: true, titleEn: true } },
@@ -33,7 +27,7 @@ export async function POST(request: NextRequest) {
       take: 10,
     });
 
-    const result = orders.map((order) => ({
+    const data = orders.map((order) => ({
       orderNo: order.orderNo,
       status: order.status,
       amount: order.amount,
@@ -44,8 +38,8 @@ export async function POST(request: NextRequest) {
       paidAt: order.paidAt,
     }));
 
-    return NextResponse.json({ orders: result });
+    return success(data);
   } catch (err: any) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return error(50001, "Server error", 500);
   }
 }

@@ -46,6 +46,32 @@
     "statusPaid": "Completed",
     "statusExpired": "Expired"
   },
+  "auth": {
+    "loginTitle": "Sign In",
+    "registerTitle": "Create Account",
+    "email": "Email",
+    "password": "Password",
+    "nickname": "Nickname",
+    "passwordHint": "At least 6 characters",
+    "loginBtn": "Sign In",
+    "registerBtn": "Create Account",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "registerLink": "Create one",
+    "logoutBtn": "Sign Out"
+  },
+  "me": {
+    "title": "My Account",
+    "orders": "My Orders",
+    "profile": "Profile",
+    "changePassword": "Change Password",
+    "oldPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "saveBtn": "Save",
+    "empty": "No orders yet"
+  },
   "notice": {
     "title": "Notice",
     "rules": [

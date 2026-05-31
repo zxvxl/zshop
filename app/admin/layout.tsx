@@ -1,3 +1,5 @@
+import AdminLogout from "./admin-logout";
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
@@ -11,9 +13,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <a href="/admin/cards" className="text-gray-600 hover:text-gray-900 font-medium">Cards</a>
               <a href="/admin/orders" className="text-gray-600 hover:text-gray-900 font-medium">Orders</a>
               <a href="/admin/categories" className="text-gray-600 hover:text-gray-900 font-medium">Categories</a>
+              <a href="/admin/users" className="text-gray-600 hover:text-gray-900 font-medium">Users</a>
             </div>
           </div>
-          <a href="/" className="text-sm text-orange-500 font-medium hover:text-orange-600">View Shop &rarr;</a>
+          <div className="flex items-center gap-3">
+            <a href="/" className="text-sm text-orange-500 font-medium hover:text-orange-600">View Shop &rarr;</a>
+            <AdminLogout />
+          </div>
         </div>
       </nav>
       <main className="max-w-6xl mx-auto px-6 py-8">{children}</main>

@@ -1,28 +1,27 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
+import { success, error, validate } from "@/lib/api";
+import { orderCheckSchema } from "@/lib/schemas";
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderNo } = await request.json();
+    const body = await request.json();
+    const result = validate(orderCheckSchema, body);
+    if ("error" in result) return result.error;
 
-    if (!orderNo || orderNo.trim().length < 8) {
-      return NextResponse.json({ error: "Invalid orderNo" }, { status: 400 });
-    }
+    const { orderNo } = result.data;
 
     const order = await prisma.order.findUnique({
-      where: { orderNo: orderNo.trim() },
+      where: { orderNo },
       include: {
         product: { select: { title: true, titleEn: true } },
         cards: { select: { content: true } },
       },
     });
 
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
+    if (!order) return error(40401, "Order not found", 404);
 
-    // Only return cards if paid (no email/address leak)
-    return NextResponse.json({
+    return success({
       status: order.status,
       amount: order.amount,
       product: order.product,
@@ -31,6 +30,6 @@ export async function POST(request: NextRequest) {
       paidAt: order.paidAt,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return error(50001, "Server error", 500);
   }
 }

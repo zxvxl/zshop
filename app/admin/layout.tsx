@@ -13,6 +13,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <a href="/admin/cards" className="text-gray-600 hover:text-gray-900 font-medium">Cards</a>
               <a href="/admin/orders" className="text-gray-600 hover:text-gray-900 font-medium">Orders</a>
               <a href="/admin/categories" className="text-gray-600 hover:text-gray-900 font-medium">Categories</a>
+              <a href="/admin/payment" className="text-gray-600 hover:text-gray-900 font-medium">Payment</a>
               <a href="/admin/users" className="text-gray-600 hover:text-gray-900 font-medium">Users</a>
             </div>
           </div>

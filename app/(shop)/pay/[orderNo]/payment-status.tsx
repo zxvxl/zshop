@@ -1,6 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
+import { apiPost } from "@/lib/client-api";
 
 interface OrderData {
   orderNo: string;
@@ -22,12 +23,7 @@ export default function PaymentStatus({ order: initial }: { order: OrderData }) 
     if (order.status !== "pending") return;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch("/api/order/check", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderNo: order.orderNo }),
-        });
-        const data = await res.json();
+        const data = await apiPost("/api/order/check", { orderNo: order.orderNo });
         if (data.status === "paid") {
           setOrder({ ...order, status: "paid", cards: data.cards || [] });
         }

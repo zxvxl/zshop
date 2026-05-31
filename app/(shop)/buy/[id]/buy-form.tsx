@@ -2,6 +2,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiPost } from "@/lib/client-api";
 
 interface Props {
   product: {
@@ -28,14 +29,8 @@ export default function BuyForm({ product }: Props) {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: product.id, email, quantity }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
-      router.push(`/pay/${data.order.orderNo}`);
+      const order = await apiPost("/api/order", { productId: product.id, email, quantity });
+      router.push(`/pay/${order.orderNo}`);
     } catch (err: any) {
       setError(err.message);
     } finally {

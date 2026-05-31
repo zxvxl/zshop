@@ -15,6 +15,7 @@ export const createOrderSchema = z.object({
   productId: z.number().int().positive("Invalid product"),
   email: z.string().email("Invalid email format"),
   quantity: z.number().int().min(1).max(100).optional().default(1),
+  channelId: z.number().int().positive().optional(),
 });
 
 export const changePasswordSchema = z.object({

@@ -1,6 +1,7 @@
 "use client";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { apiPost } from "@/lib/client-api";
 
 export default function OrdersPage() {
   const t = useTranslations("order");
@@ -16,13 +17,8 @@ export default function OrdersPage() {
     setLoading(true);
     setSearched(true);
     try {
-      const res = await fetch("/api/order/query", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), orderNo: orderNo.trim() }),
-      });
-      const data = await res.json();
-      setOrders(data.orders || []);
+      const data = await apiPost("/api/order/query", { email: email.trim(), orderNo: orderNo.trim() });
+      setOrders(Array.isArray(data) ? data : []);
     } catch {
       setOrders([]);
     } finally {

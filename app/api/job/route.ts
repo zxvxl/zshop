@@ -1,74 +1,94 @@
-import { fetchTransactions } from "@/lib/chain";
-import { deliverCards } from "@/lib/order";
 import prisma from "@/lib/prisma";
-import BigNumber from "bignumber.js";
+import { getProvider } from "@/lib/payment";
+import { deliverCards } from "@/lib/order";
 import dayjs from "dayjs";
 
 export const dynamic = "force-dynamic";
 
-interface ChainTx {
-  hash: string;
-  value: string;
-  tokenDecimal: string;
-  to: string;
-}
+export async function GET(request: Request) {
+  // Optional: verify cron secret
+  const authHeader = request.headers.get("x-cron-secret");
+  const expectedSecret = process.env.CRON_SECRET || "";
+  if (expectedSecret && authHeader !== expectedSecret) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-async function checkTx(tx: ChainTx) {
-  // Convert from wei to USDT amount
-  const decimals = parseInt(tx.tokenDecimal) || 18;
-  const amount = new BigNumber(tx.value)
-    .dividedBy(new BigNumber(10).pow(decimals))
-    .toString();
-
-  // Skip if already processed
-  const existingTx = await prisma.tx.findFirst({ where: { hash: tx.hash } });
-  if (existingTx?.matched) return;
-
-  // Find matching pending order within 30 minutes
-  const order = await prisma.order.findFirst({
-    where: {
-      amount,
-      status: "pending",
-      createdAt: { gt: dayjs().subtract(30, "minute").toDate() },
-    },
-  });
-
-  if (!order) return;
-
-  // Mark order as paid
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { status: "paid", paidAt: new Date() },
-  });
-
-  // Record transaction
-  await prisma.tx.upsert({
-    where: { hash: tx.hash },
-    update: { matched: true, orderId: order.id },
-    create: { hash: tx.hash, amount, matched: true, orderId: order.id },
-  });
-
-  // Auto deliver cards
-  await deliverCards(order.id);
-}
-
-export async function GET() {
   try {
-    const wallet = process.env.BSC_WALLET?.toLowerCase();
-    if (!wallet) {
-      return Response.json({ error: "No wallet configured" }, { status: 500 });
+    // Get all pending orders that need polling (USDT channels)
+    const pendingOrders = await prisma.order.findMany({
+      where: {
+        status: "pending",
+        createdAt: { gt: dayjs().subtract(30, "minute").toDate() },
+        channelId: { not: null },
+      },
+      include: { product: true },
+    });
+
+    // Group by channel
+    const channelOrders = new Map<number, any[]>();
+    for (const order of pendingOrders) {
+      if (!order.channelId) continue;
+      const list = channelOrders.get(order.channelId) || [];
+      list.push(order);
+      channelOrders.set(order.channelId, list);
     }
 
-    const transactions = await fetchTransactions();
+    // Process each channel
+    for (const [channelId, orders] of channelOrders) {
+      const channel = await prisma.paymentChannel.findUnique({ where: { id: channelId } });
+      if (!channel || !channel.enabled) continue;
 
-    for (const tx of transactions) {
-      // Only process incoming transfers to our wallet
-      if (tx.to?.toLowerCase() === wallet) {
-        await checkTx(tx);
+      // Only poll-based providers (USDT)
+      if (!channel.provider.startsWith("usdt_")) continue;
+
+      const config = JSON.parse(channel.config);
+      const provider = getProvider(channel.provider);
+      if (!provider) continue;
+
+      for (const order of orders) {
+        const paid = await provider.checkPayment(order, config);
+        if (paid) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { status: "paid", paidAt: new Date() },
+          });
+          await deliverCards(order.id);
+        }
       }
     }
 
-    // Expire old pending orders (> 30 min)
+    // Also handle legacy orders (no channelId, fallback .env wallet)
+    const legacyOrders = await prisma.order.findMany({
+      where: {
+        status: "pending",
+        channelId: null,
+        createdAt: { gt: dayjs().subtract(30, "minute").toDate() },
+      },
+    });
+
+    if (legacyOrders.length > 0 && process.env.BSC_WALLET) {
+      const { UsdtBscProvider } = await import("@/lib/payment/usdt-bsc");
+      const provider = new UsdtBscProvider();
+      const config = {
+        wallet: process.env.BSC_WALLET,
+        token: process.env.BSC_USDT_TOKEN,
+        bscscanKey: process.env.BSCSCAN_KEY,
+        testnet: process.env.TEST === "true",
+      };
+
+      for (const order of legacyOrders) {
+        const paid = await provider.checkPayment(order, config);
+        if (paid) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { status: "paid", paidAt: new Date() },
+          });
+          await deliverCards(order.id);
+        }
+      }
+    }
+
+    // Expire old pending orders
     await prisma.order.updateMany({
       where: {
         status: "pending",

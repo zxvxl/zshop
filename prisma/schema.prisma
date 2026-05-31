@@ -68,6 +68,9 @@ model Order {
   cards     Card[]
   user      User?     @relation(fields: [userId], references: [id])
   userId    Int?
+  channelId Int?
+  payUrl    String    @default("")
+  qrCode    String    @default("")
   paidAt    DateTime?
   createdAt DateTime  @default(now())
 }
@@ -78,4 +81,19 @@ model Tx {
   amount  String
   matched Boolean @default(false)
   orderId Int?
+}
+
+model PaymentChannel {
+  id        Int      @id @default(autoincrement())
+  name      String
+  nameEn    String   @default("")
+  provider  String                  // "usdt_bsc" | "alipay_face" | "alipay_web"
+  icon      String   @default("")
+  enabled   Boolean  @default(true)
+  sort      Int      @default(0)
+  config    String   @default("{}") // JSON config per provider
+  feeRate   Float    @default(0)    // percent, e.g. 0.6
+  minAmount Float    @default(0)
+  maxAmount Float    @default(0)    // 0 = no limit
+  createdAt DateTime @default(now())
 }
